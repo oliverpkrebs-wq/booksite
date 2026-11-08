@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OPK Publishers Co.</title>
+<style>
+:root{--navy:#17243b;--blue:#3157d5;--paper:#f5f6fa;--ink:#1c2638;--muted:#667085;--line:#e3e7ef}
+*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+header{background:var(--navy);color:white;padding:30px 0 22px}.wrap{width:min(1000px,92%);margin:auto}
+.brand{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}
+h1{font-size:clamp(1.8rem,5vw,2.7rem);letter-spacing:-.045em;margin:0}header p{color:#d9e1f1;margin:7px 0 0}
+nav{display:flex;gap:9px;flex-wrap:wrap;margin-top:22px}
+button,.btn{border:0;border-radius:10px;padding:10px 15px;font:inherit;font-weight:650;cursor:pointer;text-decoration:none;display:inline-block}
+nav button{background:#fff;color:var(--navy)}button.primary,.btn.primary{background:var(--blue);color:white}button.light{background:#edf1ff;color:#203a9a}
+main{padding:28px 0 55px}.panel{background:white;border:1px solid var(--line);border-radius:16px;padding:22px;margin-bottom:18px}
+h2{margin:0 0 9px;font-size:1.4rem}.muted{color:var(--muted)}.toolbar{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin:18px 0}
+input{font:inherit;border:1px solid #cbd2df;border-radius:9px;padding:11px 12px;min-width:0}
+#search{flex:1;min-width:190px}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
+.book{border:1px solid var(--line);border-radius:13px;padding:17px;display:flex;flex-direction:column;gap:10px;min-height:190px}
+.cover{height:85px;border-radius:9px;background:linear-gradient(135deg,#e6ebff,#f4e8ff);display:grid;place-items:center;color:#314a9a;font-size:2rem}
+.book h3{margin:0}.book p{margin:0;color:var(--muted);white-space:pre-wrap}.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:auto}
+.empty{padding:22px;border:1px dashed #cbd2df;border-radius:12px;color:var(--muted);text-align:center;grid-column:1/-1}
+.hidden{display:none!important}.steps li{margin:9px 0}.code{background:#f0f2f7;padding:2px 6px;border-radius:5px;font-family:ui-monospace,monospace}
+footer{text-align:center;color:var(--muted);padding:18px;font-size:.9rem}
+@media(max-width:520px){.panel{padding:17px}}
+</style>
+</head>
+<body>
+<header><div class="wrap">
+  <div class="brand"><div><h1>OPK Publishers Co.</h1><p>Stories worth opening.</p></div><div>Independent books. Free to read.</div></div>
+  <nav><button onclick="show('library')">Book Library</button><button onclick="show('saved')">My Bookshelf</button><button onclick="show('help')">How to Add Books</button></nav>
+</div></header>
+<main class="wrap">
+  <section id="library" class="panel">
+    <h2>Published Books</h2><p class="muted">Browse the collection and download books for free.</p>
+    <div class="toolbar"><input id="search" type="search" placeholder="Search books..." oninput="renderBooks()"><span class="muted" id="count"></span></div>
+    <div id="books" class="grid"></div>
+  </section>
+  <section id="saved" class="panel hidden">
+    <h2>My Bookshelf</h2><p class="muted">Books you save stay on this device in this browser. No account is needed.</p>
+    <div id="savedBooks" class="grid"></div>
+  </section>
+  <section id="help" class="panel hidden">
+    <h2>How the owner adds a book</h2>
+    <p>This simple version uses GitHub Pages, so there is no signup service or complicated database.</p>
+    <ol class="steps">
+      <li>Open your GitHub repository for OPK Publishers Co.</li>
+      <li>Upload the book's PDF into a folder named <span class="code">books</span>. Create the folder if it does not exist.</li>
+      <li>Open <span class="code">index.html</span> and find the <span class="code">const BOOKS = [</span> section near the top of the script.</li>
+      <li>Add a book entry using the example below. Change the title, description, and PDF filename.</li>
+      <li>Save the change by committing it to GitHub. GitHub Pages will update the public library.</li>
+    </ol>
+    <p><strong>Example book entry:</strong></p>
+    <pre class="code" style="white-space:pre-wrap;overflow-wrap:anywhere">{
+  title: "My New Book",
+  description: "A funny adventure.",
+  file: "books/my-new-book.pdf"
+},</pre>
+    <p class="muted">Important: this simple version does not have private email/password accounts or a secure owner upload page. GitHub is where you add PDFs, and published books are visible to everyone.</p>
+  </section>
+</main>
+<footer>© OPK Publishers Co.</footer>
+<script>
+/* OWNER: Add each published PDF to your GitHub repository, then list it here.
+   The file path must match the PDF's name and folder exactly. */
+const BOOKS = [
+  // Example:
+  // { title: "My First Book", description: "A funny story.", file: "books/my-first-book.pdf" },
+];
+
+const $ = id => document.getElementById(id);
+function show(section){
+  ["library","saved","help"].forEach(id=>$(id).classList.toggle("hidden",id!==section));
+  if(section==="saved") renderSaved();
+}
+function getSaved(){try{return JSON.parse(localStorage.getItem("opk_saved_books")||"[]")}catch{return []}}
+function setSaved(items){localStorage.setItem("opk_saved_books",JSON.stringify(items))}
+function safeText(value){return String(value||"")}
+function makeBookCard(book,index){
+  const card=document.createElement("article");card.className="book";
+  const cover=document.createElement("div");cover.className="cover";cover.textContent="📖";
+  const title=document.createElement("h3");title.textContent=safeText(book.title)||"Untitled book";
+  const desc=document.createElement("p");desc.textContent=safeText(book.description)||"";
+  const actions=document.createElement("div");actions.className="actions";
+  const download=document.createElement("a");download.className="btn primary";download.href=book.file;download.download="";download.textContent="Download PDF";
+  const save=document.createElement("button");save.className="light";const saved=getSaved().some(x=>x.file===book.file);
+  save.textContent=saved?"Saved ✓":"Save book";save.onclick=()=>{let items=getSaved();if(items.some(x=>x.file===book.file)){items=items.filter(x=>x.file!==book.file)}else{items.push(book)}setSaved(items);renderBooks();renderSaved()};
+  actions.append(download,save);card.append(cover,title,desc,actions);return card;
+}
+function renderBooks(){
+  const q=$("search").value.trim().toLowerCase();
+  const matches=BOOKS.filter(b=>(safeText(b.title)+" "+safeText(b.description)).toLowerCase().includes(q));
+  $("count").textContent=matches.length+" book"+(matches.length===1?"":"s");
+  const list=$("books");list.replaceChildren();
+  if(!matches.length){const empty=document.createElement("div");empty.className="empty";empty.textContent=BOOKS.length?"No books match your search.":"The bookshelf is waiting for its first book! Use “How to Add Books” to publish one.";list.append(empty);return}
+  matches.forEach((b,i)=>list.append(makeBookCard(b,i)));
+}
+function renderSaved(){
+  const list=$("savedBooks");list.replaceChildren();const items=getSaved();
+  if(!items.length){const empty=document.createElement("div");empty.className="empty";empty.textContent="You haven't saved any books yet. Visit the Book Library to save one.";list.append(empty);return}
+  items.forEach((b,i)=>list.append(makeBookCard(b,i)));
+}
+renderBooks();
+</script>
+</body></html>
